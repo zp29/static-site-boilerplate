@@ -15,6 +15,10 @@ const RobotstxtPlugin = require('robotstxt-webpack-plugin');
 const SitemapPlugin = require('sitemap-webpack-plugin').default;
 
 const config = require('./site.config');
+let devStyles = config.dev_styles,
+    isSasss   = devStyles === 'scss' || devStyles === 'sass'
+
+console.log('webpack.plugins.js isSasss ->', isSasss);
 
 // Hot module replacement
 const hmr = new webpack.HotModuleReplacementPlugin();
@@ -104,41 +108,16 @@ const webpackBar = new WebpackBar({
   color: '#ff6469',
 });
 
-// Google analytics
-const CODE = `<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','{{ID}}','auto');ga('send','pageview');</script>`;
-
-class GoogleAnalyticsPlugin {
-  constructor({ id }) {
-    this.id = id;
-  }
-
-  apply(compiler) {
-    compiler.hooks.compilation.tap('GoogleAnalyticsPlugin', (compilation) => {
-      HTMLWebpackPlugin.getHooks(compilation).beforeEmit.tapAsync(
-        'GoogleAnalyticsPlugin',
-        (data, cb) => {
-          data.html = data.html.replace('</head>', `${CODE.replace('{{ID}}', this.id) }</head>`);
-          cb(null, data);
-        },
-      );
-    });
-  }
-}
-
-const google = new GoogleAnalyticsPlugin({
-  id: config.googleAnalyticsUA,
-});
 
 module.exports = [
   clean,
-  stylelint,
+  isSasss ? stylelint : '',
   cssExtract,
   ...generateHTMLPlugins(),
   fs.existsSync(config.favicon) && favicons,
   config.env === 'production' && optimizeCss,
   config.env === 'production' && robots,
   config.env === 'production' && sitemap,
-  config.googleAnalyticsUA && google,
   webpackBar,
   config.env === 'development' && hmr,
 ].filter(Boolean);

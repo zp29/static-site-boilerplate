@@ -15,10 +15,7 @@ const config = {
   site_description: 'A modern boilerplate for static website development',
 
   // Your website's URL, used for sitemap
-  site_url: 'http://staticsiteboilerplate.com',
-
-  // Google Analytics tracking ID (leave blank to disable)
-  googleAnalyticsUA: '',
+  site_url: '',
 
   // The viewport meta tag added to your HTML page's <head> tag
   viewport: 'width=device-width,initial-scale=1',
@@ -28,6 +25,9 @@ const config = {
 
   // Local development URL
   dev_host: 'localhost',
+
+  // dev styles
+  dev_styles: 'less',
 
   // Local development port
   port: process.env.PORT || 8000,

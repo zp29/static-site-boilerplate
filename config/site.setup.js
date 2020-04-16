@@ -17,11 +17,7 @@ if (!ROOT) {
 
 async function runSetup() {
   clear();
-  console.log(
-    chalk.red(
-      figlet.textSync('Static Site Boilerplate', { horizontalLayout: 'fitted' })
-    )
-  );
+  console.log( chalk.yellow(figlet.textSync('29' )) );
 
   const questions = await prompt([
     {
@@ -43,22 +39,22 @@ async function runSetup() {
       hint: 'http://yourwebsite.com'
     },
     {
-      type: 'input',
-      name: 'google_analytics',
-      message: 'What is your Google Analytics Tracking ID?',
-      hint: 'UA-XXXXX-Y'
+      type: 'select',
+      name: 'styles',
+      message: 'CSS extension language?',
+      choices: ['less', 'sass', 'scss', 'None'],
     },
     {
       type: 'select',
       name: 'cssreset',
       message: 'Which CSS reset library would you like installed?',
-      choices: ['normalize.css', 'reset.css', 'sanitize.css', 'None'],
+      choices: ['None', 'normalize.css', 'reset.css'],
     },
     {
       type: 'select',
       name: 'jquery',
       message: 'Would you like jQuery installed?',
-      choices: ['Yes', 'No'],
+      choices: ['No', 'Yes'],
     }
   ]);
 
@@ -73,20 +69,34 @@ async function runSetup() {
     if (typeof questions.site_url !== 'undefined') {
       data = data.replace(/site_url: '.*?'/g, `site_url: '${questions.site_url}'`);
     }
-    if (typeof questions.google_analytics !== 'undefined') {
-      data = data.replace(/googleAnalyticsUA: '.*?'/g, `googleAnalyticsUA: '${questions.google_analytics}'`);
+    if (typeof questions.styles !== 'undefined') {
+      data = data.replace(/dev_styles: '.*?'/g, `dev_styles: '${questions.styles}'`);
     }
-
     fs.writeFile(path.join(ROOT, '/config/site.config.js'), data, 'utf8', (err) => { });
   });
 
   // Add CSS reset to stylesheet
-  if (questions.cssreset !== 'None') {
-    const cssContent =
-      '// Load CSS Reset from NPM\n'
-      + '@import "~' + questions.cssreset + '"\n';
-
-    fs.writeFile(path.join(ROOT, '/src/stylesheets/styles.scss'), cssContent, (err) => {});
+  if (questions.styles !== 'None') {
+    let styles = questions.styles,
+        isLess = styles == 'less',
+        isSass = styles == 'sass',
+        isScss = styles == 'scss'
+    if (questions.cssreset !== 'None') {
+      let isNormalizePath = questions.cssreset === 'normalize.css',
+          isResetPath    = questions.cssreset === 'reset.css',
+          normalizePath = `node_modules/normalize.css/normalize.css`,
+          resetPath     = `node_modules/reset-css/reset.css`,
+          path          = isNormalizePath ? normalizePath : isResetPath ? resetPath : ''
+          lesscontent   = `@import "../../${path}"` + '\n',
+          sasscontent   = '@import "~' + questions.cssreset + '"\n'
+          StyleContent  = isLess ? lesscontent : sasscontent
+      console.log('site.setup.js StyleContent ->', StyleContent);
+      fs.writeFile(path.join(ROOT, `/src/stylesheets/styles.${questions.styles}`), StyleContent, (err) => {});
+    } else {
+      fs.writeFile(path.join(ROOT, `/src/stylesheets/styles.${questions.styles}`), '', (err) => {});
+    }
+  } else {
+    fs.writeFile(path.join(ROOT, `/src/stylesheets/styles.css`), '', (err) => {});
   }
 
   // Add jQuery to scripts
